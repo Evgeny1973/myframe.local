@@ -1,20 +1,18 @@
 <?php
-
-use Framework\Http\Response;
-use Framework\Http\RequestFactory;
+use Zend\HttpHandlerRunner\Emitter\SapiEmitter;
+use Zend\Diactoros\Response\HtmlResponse;
+use Zend\Diactoros\ServerRequestFactory;
 
 chdir(dirname(__DIR__));
 require 'vendor/autoload.php';
 
-$request = RequestFactory::fromGlobals();
+$request = ServerRequestFactory::fromGlobals();
+
 $name = $request->getQueryParams()['name'] ?? 'Guest';
 
-$response = (new Response('Hello ' . $name . '!'))
+$response = (new HtmlResponse('Hello, ' . $name . '!'))
     ->withHeader('X-Developer', 'Evgeny');
 
-header('HTTP/1.0 ' . $response->getStatusCode() . ' ' . $response->getReasonPhrase());
-foreach ($response->getHeaders() as $name => $values) {
-    header($name. ':' . implode(', ', $values));
-}
-echo $response->getBody();
+$emitter = new SapiEmitter;
+$emitter->emit($response);
 

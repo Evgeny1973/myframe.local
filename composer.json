@@ -4,9 +4,11 @@
   },
   "require": {
     "php": ">=7.3.2",
+    "ext-mbstring": "*",
     "psr/http-message": "^1.0",
     "roave/security-advisories": "dev-master",
-    "ext-mbstring": "*"
+    "zendframework/zend-diactoros": "^2.1",
+    "zendframework/zend-httphandlerrunner": "^1.1"
   },
   "autoload": {
     "psr-4": {
