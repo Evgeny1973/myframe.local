@@ -1,22 +1,23 @@
 <?php
 
-namespace Framework\Http\Router;
+namespace Framework\Http\Router\Route;
 
+use Framework\Http\Router\Result;
 use Psr\Http\Message\ServerRequestInterface;
 
-class Route
+class RegexpRoute implements Route
 {
-    public $name;
-    public $pattern;
-    public $handler;
+    private $name;
+    private $pattern;
+    private $handler;
     /**
      * @var array
      */
-    public $methods;
+    private $methods;
     /**
      * @var array
      */
-    public $tokens;
+    private $tokens;
 
     public function __construct($name, $pattern, $handler, array $methods, array $tokens = [])
     {
@@ -49,7 +50,7 @@ class Route
             array_filter($matches, '\is_string', ARRAY_FILTER_USE_KEY));
     }
 
-    public function generate($name, array $params = [])
+    public function generate($name, array $params = []): ?string
     {
         $arguments = array_filter($params);
         if ($name !== $this->name) {
