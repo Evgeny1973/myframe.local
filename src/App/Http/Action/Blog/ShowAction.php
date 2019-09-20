@@ -10,7 +10,6 @@ class ShowAction
     public function __invoke(ServerRequestInterface $request)
     {
         $id = $request->getAttribute('id');
-        var_dump($id);
         if ($id > 2) {
             return new JsonResponse(['error' => 'Undefined page'], 404);
         }
