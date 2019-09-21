@@ -2,6 +2,7 @@
 
 namespace Tests\Framework\Http\Pipeline;
 
+use Framework\Http\Pipeline\Pipeline;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -19,7 +20,7 @@ class PipelineTest extends TestCase
         $response = $pipeline(new ServerRequest, new Last);
 
         $this->assertJsonStringEqualsJsonString(
-            json_encode(['middleware-1' => 1, 'middleware2' => 2]),
+            json_encode(['middleware-1' => 1, 'middleware-2' => 2]),
             $response->getBody()->getContents());
     }
 }
