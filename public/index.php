@@ -2,6 +2,7 @@
 
 use App\Http\Action\AboutAction;
 use App\Http\Middleware\BasicAuthActionMiddleware;
+use App\Http\Middleware\NotFoundHandler;
 use App\Http\Action\Blog\IndexAction;
 use App\Http\Action\Blog\ShowAction;
 use App\Http\Action\CabinetAction;
@@ -38,9 +39,7 @@ $routes->get('cabinet', '/cabinet', function (ServerRequestInterface $request) u
     $pipeline->pipe(new BasicAuthActionMiddleware($params['users']));
     $pipeline->pipe(new CabinetAction);
 
-    return $pipeline($request, function () {
-        return new HtmlResponse('Undefined page', 404);
-    });
+    return $pipeline($request, new NotFoundHandler);
 });
 
 $router = new AuraRouterAdapter($aura);
@@ -57,7 +56,8 @@ try {
     $action = $resolver->resolve($result->getHandler());
     $response = $action($request);
 } catch (RequestNotMatchedException $e) {
-    $response = new HtmlResponse('Undefined page', 404);
+    $handler = new NotFoundHandler;
+    $response = $handler($request);
 }
 
 # Postprocessing
@@ -66,4 +66,3 @@ $response = $response->withHeader('X-Developer', 'Evgeny');
 # Send
 $emitter = new SapiEmitter;
 $emitter->emit($response);
-
