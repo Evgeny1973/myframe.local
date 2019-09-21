@@ -9,7 +9,7 @@ use App\Http\Action\CabinetAction;
 use App\Http\Action\HelloAction;
 use App\Http\Middleware\ProfilerMiddleware;
 use Aura\Router\RouterContainer;
-use Framework\Http\ActionResolver;
+use Framework\Http\MiddlewareResolver;
 use Framework\Http\Router\AuraRouterAdapter;
 use Framework\Http\Router\Exception\RequestNotMatchedException;
 use Psr\Http\Message\ServerRequestInterface;
@@ -33,17 +33,14 @@ $routes->get('home', '/', HelloAction::class);
 $routes->get('about', '/about', AboutAction::class);
 $routes->get('blog', '/blog', IndexAction::class);
 $routes->get('blog_show', '/blog/{id}', ShowAction::class)->tokens(['id' => '\d+']);
-$routes->get('cabinet', '/cabinet', function (ServerRequestInterface $request) use ($params) {
-    $pipeline = new Pipeline;
-    $pipeline->pipe(new ProfilerMiddleware);
-    $pipeline->pipe(new BasicAuthActionMiddleware($params['users']));
-    $pipeline->pipe(new CabinetAction);
-
-    return $pipeline($request, new NotFoundHandler);
-});
+$routes->get('cabinet', '/cabinet', [
+    ProfilerMiddleware::class,
+    new BasicAuthActionMiddleware($params['users']),
+    CabinetAction::class,
+]);
 
 $router = new AuraRouterAdapter($aura);
-$resolver = new ActionResolver;
+$resolver = new MiddlewareResolver;
 
 # Run
 $request = ServerRequestFactory::fromGlobals();
@@ -53,8 +50,12 @@ try {
     foreach ($result->getAttributes() as $attribute => $value) {
         $request = $request->withAttribute($attribute, $value);
     }
-    $action = $resolver->resolve($result->getHandler());
-    $response = $action($request);
+    $handlers = $result->getHandler();
+    $pipeline = new Pipeline;
+    foreach (is_array($handlers) ? $handlers : [$handlers] as $handler) {
+        $pipeline->pipe($resolver->resolve($handler));
+    }
+    $response = $pipeline($request, new NotFoundHandler);
 } catch (RequestNotMatchedException $e) {
     $handler = new NotFoundHandler;
     $response = $handler($request);
